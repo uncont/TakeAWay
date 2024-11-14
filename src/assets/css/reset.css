@@ -52,4 +52,11 @@ h5,
 h6 {
   font-weight: 400;
 }
+button{
+	/* 清除默认边框 */
+	border:0;
+	outline:none;
+   /*清除默认背景 */
+   background-color: transparent;
+	}
 
