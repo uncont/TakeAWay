@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-    import IndexNav from './common/IndexNav.vue';
+    import IndexNav from '@/components/common/IndexNav.vue';
 
 </script>
 

@@ -4,10 +4,8 @@ import axios from "axios";
 import { user_LoginURL } from "@/API/config"
 
 // 用户登入
-export const userLogin = async(data) => {
-  try {
-    const response = await axios.post(user_LoginURL, data)
-  } catch (error) {
-    console.error(error+"用户登入失败");
-  }
+export const userLogin = (data)=>{
+  console.log(data);
+  
 }
+// 用户注册

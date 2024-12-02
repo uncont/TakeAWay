@@ -1,68 +1,134 @@
 <!-- 用户登入页面 -->
 <template>
 
-<form class="form wrap">
+<form class="form wrap" @submit.prevent="onLogin()">
   <h2>用户登入</h2>
   <div class="flex-column">
-    <label>用户账号</label>
+    <label>{{ loginMethod ? '账号登入' : '邮箱登入' }}</label>
   </div>
-  <div class="inputForm">
+  <!-- 账号登入 -->
+  <div class="inputForm" v-if="loginMethod">
     <img src="@/assets/Image/SVG/email.svg" alt="">
-    <input type="text" class="input" placeholder="请输入你的账户" />
+    <input 
+    type="text" 
+    v-model="userAccount.account"
+    class="input" 
+    placeholder="请输入你的账户"
+    pattern="^[a-zA-Z0-9_]{4,16}$"
+    title="请输入字母、数字或下划线，且以字母开头，长度在 4 到 16 个字符之间"
+    autocomplete="username"
+    required/>
   </div>
-
+  <!-- 邮箱登入 -->
+  <div class="inputForm" v-else>
+    <img src="@/assets/Image/SVG/email.svg" alt="">
+    <input 
+    type="email" 
+    v-model="userAccount.email"
+    class="input" 
+    placeholder="请输入你的邮箱"
+    required/>
+  </div>
+  <!-- 用户密码 -->
   <div class="flex-column">
     <label>用户密码</label>
   </div>
   <div class="inputForm">
     <img src="@/assets/Image/SVG/password.svg" alt="">
     <input 
-    type="password" 
-    class="input" 
+    :type="password"
+    v-model="userAccount.password" 
+    class="input"
     placeholder="请输入账户密码" 
-    autocomplete="password"/>
+    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$"
+    title="密码必须包含至少一个大写字母、一个小写字母、一个数字和一个特殊字符，并且长度在 8 到 16 个字符之间"
+    autocomplete="password"
+    required/>
   </div>
 
   <div class="flex-row">
-    <div>
-      <input type="radio" />
-      <label>记住密码</label>
+    <div @click="passwordType()">
+      <input type="radio" v-model="passwordShow" value="true" />
+      <label  class="no-select">{{ passwordShow ? "隐藏密码" : "显示密码" }}</label>
     </div>
     <span class="span">密码忘记了？</span>
   </div>
-  <button class="button-submit" @click.prevent="onShow">登入</button>
+  <button class="button-submit">登入</button>
   <p class="p">还没有账号？<span class="span" @click="router.push('/register')">点击前往注册</span></p>
   <p class="p line">或者</p>
 
   <div class="flex-row">
     <button class="btn WeChat">使用微信登入</button>
-    <button class="btn apple">使用邮箱地址登入</button>
+    <button class="btn apple" @click.prevent="loginMethod = false" v-if="loginMethod">使用邮箱登入</button>
+    <button class="btn apple" @click.prevent="loginMethod = true" v-else>使用账号登入</button>
   </div>
 </form>
 <Vcode :show="isShow" @success="onSuccess" @close="onClose" />
 </template>
 
 <script setup>
+import { ref } from "vue";
+// 引入路由，跳转注册路由
 import { useRouter } from "vue-router";
 const router = useRouter();
-import { ref } from "vue";
+
+
+ /*验证码*/ 
 import Vcode from "vue3-puzzle-vcode";
-/*验证码*/ 
-const isShow = ref(false);//验证码的显示与隐藏
+
+const isShow = ref(false);//验证码的显示
 const onShow = () => {
   isShow.value = true;
 };
-const onClose = () => {
+const onClose = () => { //验证码的隐藏
   isShow.value = false;
 };
 // 成功后执行的函数
+import { userLogin } from '@/API/UserAccount'
 const onSuccess = () => {
   onClose(); // 验证成功，需要手动关闭模态框
+  const data = {
+    password:userAccount.value.password
+  }
+  if(loginMethod.value){
+    data.account = userAccount.value.account
+  }else{
+    data.email = userAccount.value.email
+  }
+  userLogin(data)
+   
 };
+/*密码的显示与隐藏*/ 
+const passwordShow = ref(false)
+const password = ref('password')
+const passwordType = ()=>{
+  passwordShow.value = !passwordShow.value
+  if(passwordShow.value){
+    password.value = 'text'
+  }else{
+    password.value = 'password'
+  }
+  
+}
+/*账号信息*/
+const userAccount = ref({
+  account: "",
+  email:'',
+  password: ""
+}); 
+/*切换账号登入方式*/ 
+const loginMethod = ref(true); //true为账号登入，false为邮箱登入
+/*提交表单*/
+const onLogin = () => {
+  onShow();
+}; 
 
 </script>
 
 <style scoped>
+.no-select {
+  user-select: none;
+}
 .form {
   --input-color: #93C0F2;
   --SVGBG-color: #FEFFFF;
