@@ -85,7 +85,7 @@ const onClose = () => { //验证码的隐藏
 };
 // 成功后执行的函数
 import { userLogin } from '@/API/UserAccount'
-const onSuccess = () => {
+const onSuccess = async () => {
   onClose(); // 验证成功，需要手动关闭模态框
   const data = {
     password:userAccount.value.password
@@ -95,7 +95,7 @@ const onSuccess = () => {
   }else{
     data.email = userAccount.value.email
   }
-  userLogin(data)
+  await userLogin(data)
    
 };
 /*密码的显示与隐藏*/ 

@@ -14,7 +14,8 @@
     placeholder="请输入你的账号"
     pattern="^[a-zA-Z0-9_]{4,16}$"
     title="请输入字母、数字或下划线，且以字母开头，长度在 4 到 16 个字符之间"
-    v-model="registDate.userName"
+    v-model.trim="registDate.userName"
+    @blur="checkRegister('username',registDate.userName)"
     required/>
   </div>
   <div class="flex-column change">
@@ -28,6 +29,7 @@
     class="input" 
     placeholder="请输入你的手机号码" 
     v-model="registDate.phone"
+    @blur="checkRegister('phone',registDate.phone)"
     pattern="^1[3456789]\d{9}$"
     title="请输入11位手机号码"
     required/>
@@ -38,6 +40,8 @@
     type="email" 
     class="input" 
     placeholder="请输入你的邮箱地址" 
+    v-model="registDate.email"
+    @blur="checkRegister('email',registDate.email)"
     required/>
   </div>
 
@@ -57,13 +61,14 @@
   </div>
   <div class="flex-column">
     <label>确认密码</label>
+    <p ref="passwordTip"></p>
   </div>
   <div class="inputForm">
     <img src="@/assets/Image/SVG/password.svg" alt="">
     <input 
-    :type="password" 
+    type="password" 
     class="input" 
-    placeholder="请输入账户密码" 
+    placeholder="再次输入账户密码" 
     v-model="registDate.confirmPassword"
     @blur="confirmPasswordCheck()"
     required/>
@@ -111,9 +116,12 @@ const passwordType = () => {
   }
 }
 // 确认密码
+const passwordTip = ref(null);
 const confirmPasswordCheck = () => {
   if(registDate.value.password !== registDate.value.confirmPassword){
-    alert('两次输入的密码不一致')
+    passwordTip.value.innerText = '两次密码不一致'
+  }else{
+    passwordTip.value.innerText = ''
   }
 }
 /*验证码*/ 
@@ -127,13 +135,36 @@ const onClose = () => { //验证码的隐藏
   isShow.value = false;
 };
 // 成功后执行的函数
-const onSuccess = () => {
+import { userRegister } from "@/API/UserAccount";
+const onSuccess = async () => {
   onClose(); // 验证成功，需要手动关闭模态框
+  const data = {
+    username:registDate.value.userName,
+    password:registDate.value.password,
+  }
+  if(registerMethod.value){
+    data.phone = registDate.value.phone
+  }else{
+    data.email = registDate.value.email
+  }
+  await userRegister(data)
+  
 };
 /*提交表单*/
 const onRegister = () => {
   onShow()
 }; 
+/*检查注册信息是否重复*/
+import { checkRegisterInfo } from "@/API/UserAccount"; 
+const checkRegister = async(type,data)=>{
+  const params = {
+    type:type,
+    data:data
+  }
+  if(data){
+    await checkRegisterInfo(params)
+  }
+}
 </script>
 
 <style scoped>
@@ -172,6 +203,11 @@ font-weight: 700;
 
 .form button {
   align-self: flex-end;
+}
+
+.flex-column{
+  display: flex;
+  justify-content: space-between;
 }
 
 .flex-column > label {
